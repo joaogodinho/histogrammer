@@ -115,6 +115,8 @@ public class HistogrammerTest {
         
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        actualHistogram = histogram.getPercentageHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
     
     /**
@@ -133,9 +135,14 @@ public class HistogrammerTest {
         expectedHistogram[3][0] = IMG_WIDTH * IMG_HEIGHT;
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
-        
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][0] = 100;
+        expectedHistogram[2][0] = 100;
+        expectedHistogram[3][0] = 100;
+        actualHistogram = histogram.getPercentageHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
     
     /**
@@ -154,9 +161,14 @@ public class HistogrammerTest {
         expectedHistogram[3][255] = IMG_WIDTH * IMG_HEIGHT;
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
-        
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][255] = 100;
+        expectedHistogram[2][255] = 100;
+        expectedHistogram[3][255] = 100;
+        actualHistogram = histogram.getPercentageHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
 
     /**
@@ -175,7 +187,13 @@ public class HistogrammerTest {
         expectedHistogram[3][0] = IMG_WIDTH * IMG_HEIGHT;   // BLUE
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][255] = 100;
+        expectedHistogram[2][0] = 100;
+        expectedHistogram[3][0] = 100;
+        actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
 
@@ -195,7 +213,13 @@ public class HistogrammerTest {
         expectedHistogram[3][0] = IMG_WIDTH * IMG_HEIGHT;   // BLUE
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][0] = 100;
+        expectedHistogram[2][255] = 100;
+        expectedHistogram[3][0] = 100;
+        actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
     
@@ -215,7 +239,13 @@ public class HistogrammerTest {
         expectedHistogram[3][255] = IMG_WIDTH * IMG_HEIGHT; // BLUE
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][0] = 100;
+        expectedHistogram[2][0] = 100;
+        expectedHistogram[3][255] = 100;
+        actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
     
@@ -239,7 +269,17 @@ public class HistogrammerTest {
         }
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        Arrays.fill(expectedHistogram[1], 0);
+        expectedHistogram[2][0] = 100;
+        expectedHistogram[3][0] = 100;
+        for (int h = 0; h < IMG_HEIGHT; h++) {
+            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            expectedHistogram[1][normalized] += (int) Math.round(IMG_WIDTH * 100 / (IMG_WIDTH * IMG_HEIGHT));
+        }
+        actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
     
@@ -263,7 +303,17 @@ public class HistogrammerTest {
         }
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][0] = 100;
+        Arrays.fill(expectedHistogram[2], 0);
+        expectedHistogram[3][0] = 100;
+        for (int h = 0; h < IMG_HEIGHT; h++) {
+            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            expectedHistogram[2][normalized] += (int) Math.round(IMG_WIDTH * 100 / (IMG_WIDTH * IMG_HEIGHT));
+        }
+        actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
     
@@ -287,7 +337,17 @@ public class HistogrammerTest {
         }
         histogram.calcHistogram();
         actualHistogram = histogram.getHistogram();
+        Assert.assertArrayEquals(expectedHistogram, actualHistogram);
         
+        expectedHistogram[0][255] = 100;
+        expectedHistogram[1][0] = 100;
+        expectedHistogram[2][0] = 100;
+        Arrays.fill(expectedHistogram[3], 0);
+        for (int h = 0; h < IMG_HEIGHT; h++) {
+            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            expectedHistogram[3][normalized] += (int) Math.round(IMG_WIDTH * 100 / (IMG_WIDTH * IMG_HEIGHT));
+        }
+        actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
     }
 }
