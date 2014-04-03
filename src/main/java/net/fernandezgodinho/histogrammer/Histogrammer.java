@@ -9,6 +9,21 @@ import java.util.Arrays;
  * @author Joao Godinho
  */
 public class Histogrammer {
+    /** The Constant OPAQUE. ARGB*/
+    private final static int OPAQUE = 0xFF000000;
+    
+    /** The Constant RED_COLOR. ARGB */
+    private final static int RED_COLOR = 0x00FF0000;
+    
+    /** The Constant GREEN_COLOR. ARGB */
+    private final static int GREEN_COLOR = 0x0000FF00;
+    
+    /** The Constant BLUE_COLOR. ARGB */
+    private final static int BLUE_COLOR = 0x000000FF;
+    
+    /** The Constant COLOR_RANGE. */
+    private final static int COLOR_RANGE = 256;
+    
     /** The Constant BYTE_MASK. */
     private final static int BYTE_MASK = 0xFF;
     
@@ -37,7 +52,7 @@ public class Histogrammer {
      * The histogram. First dimension represents ARGB values, second dimension represents
      * range of colors.
      */
-    private int[][] histogram = new int[4][256];
+    private int[][] histogram = new int[4][COLOR_RANGE];
     
     /**
      * The percentage histogram. First dimension represents ARGB values, second dimension represents
@@ -91,8 +106,8 @@ public class Histogrammer {
      */
     public int[][] getPercentageHistogram() {
         if (percentageHistogram == null) {
-            percentageHistogram = new int[4][256];
-            for (int i = 0; i < 256/*Color range*/; i++) {
+            percentageHistogram = new int[4][COLOR_RANGE];
+            for (int i = 0; i < COLOR_RANGE; i++) {
                 percentageHistogram[0][i] = (int) Math.round(histogram[0][i] * 100.0 / (imgHeight * imgWidth));
                 percentageHistogram[1][i] = (int) Math.round(histogram[1][i] * 100.0 / (imgHeight * imgWidth));
                 percentageHistogram[2][i] = (int) Math.round(histogram[2][i] * 100.0 / (imgHeight * imgWidth));
@@ -100,5 +115,63 @@ public class Histogrammer {
             }    
         }
         return percentageHistogram;
+    }
+    
+    /**
+     * Gets the histogram as image.
+     *
+     * @return the histogram as image
+     */
+    public BufferedImage getHistogramAsImage(int scale) {
+        int width = COLOR_RANGE * scale;
+        int height = 100/*%*/ * scale;
+        BufferedImage image = new BufferedImage(COLOR_RANGE * scale, 100/*%*/ * scale, BufferedImage.TYPE_INT_ARGB);
+        int[][] histogram = getPercentageHistogram();
+        int[] colorArr = new int[scale];
+        
+        for (int i = 0, correctY, currPixel; i < COLOR_RANGE; i++) {
+            // OPAQUE
+            correctY = (100 - histogram[0][i]) * scale;
+            if (correctY == 100 * scale) { correctY--; }
+            currPixel = image.getRGB(i * scale, correctY);
+            Arrays.fill(colorArr, OPAQUE | currPixel);
+            image.setRGB(i * scale, correctY, scale, 1, colorArr, 0, scale);
+            // RED
+            correctY = (100 - histogram[1][i]) * scale;
+            if (correctY == 100 * scale) { correctY--; }
+            currPixel = image.getRGB(i * scale, correctY);
+            Arrays.fill(colorArr, OPAQUE | RED_COLOR | currPixel);
+            image.setRGB(i * scale, correctY, scale, 1, colorArr, 0, scale);
+            // GREEN
+            correctY = (100 - histogram[2][i]) * scale;
+            if (correctY == 100 * scale) { correctY--; }
+            currPixel = image.getRGB(i * scale, correctY);
+            Arrays.fill(colorArr, OPAQUE | GREEN_COLOR | currPixel);
+            image.setRGB(i * scale, correctY, scale, 1, colorArr, 0, scale);
+            // BLUE
+            correctY = (100 - histogram[3][i]) * scale;
+            if (correctY == 100 * scale) { correctY--; }
+            currPixel = image.getRGB(i * scale, correctY);
+            Arrays.fill(colorArr, OPAQUE | BLUE_COLOR | currPixel);
+            image.setRGB(i * scale, correctY, scale, 1, colorArr, 0, scale);
+        }
+        
+        // Fill the rest with grey
+        for (int h = 0; h < height; h++) {
+            for (int w = 0, currPixel; w < width; w++) {
+                currPixel = image.getRGB(w, h);
+                if (currPixel == 0) {
+                    image.setRGB(w, h, OPAQUE | 
+                            (RED_COLOR - (100 << RED_SHIFT)) |
+                            (GREEN_COLOR - (100 << GREEN_SHIFT)) | 
+                            (BLUE_COLOR - (100 << BLUE_SHIFT)));
+                }
+            }
+        }
+        return image;
+    }
+    
+    public BufferedImage getHistogramAsImage() {
+        return this.getHistogramAsImage(1);
     }
 }

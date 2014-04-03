@@ -1,7 +1,11 @@
 package net.fernandezgodinho.histogrammer.test;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+
+import javax.imageio.ImageIO;
 
 import net.fernandezgodinho.histogrammer.Histogrammer;
 
@@ -15,6 +19,8 @@ import org.junit.Test;
  * @author Joao Godinho
  */
 public class HistogrammerTest {
+    /** The Constant COLOR_RANGE. */
+    private final static int COLOR_RANGE = 256;
     
     /** The Constant IMG_WIDTH. */
     private final static int IMG_WIDTH = 500;
@@ -67,7 +73,7 @@ public class HistogrammerTest {
      * @throws Exception the exception
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         int[] imgArr = new int[IMG_WIDTH * IMG_HEIGHT];
         
         // BLACK
@@ -87,7 +93,7 @@ public class HistogrammerTest {
         blueImg.setRGB(0, 0, IMG_WIDTH, IMG_HEIGHT, imgArr, 0, IMG_WIDTH);
         
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
             int[] line = new int[IMG_WIDTH];
             
             Arrays.fill(line, OPAQUE | normalized << RED_SHIFT);
@@ -106,7 +112,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testEmpty() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(redImg);
         
@@ -124,7 +130,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testBlackFill() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(blackImg);
         
@@ -150,7 +156,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testWhiteFill() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(whiteImg);
         
@@ -176,7 +182,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testRedFill() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(redImg);
         
@@ -202,7 +208,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testGreenFill() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(greenImg);
         
@@ -228,7 +234,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testBlueFill() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(blueImg);
         
@@ -254,9 +260,10 @@ public class HistogrammerTest {
      */
     @Test
     public void testRedGradient() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(redGradientImg);
+        BufferedImage histogramImg;
         
         for (int[] color : expectedHistogram) { Arrays.fill(color, 0); }
         expectedHistogram[0][255] = IMG_WIDTH * IMG_HEIGHT; // ALPHA
@@ -264,7 +271,7 @@ public class HistogrammerTest {
         expectedHistogram[3][0] = IMG_WIDTH * IMG_HEIGHT;   // BLUE
         // fills with the expected the gradient
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
             expectedHistogram[1][normalized] += IMG_WIDTH;
         }
         histogram.calcHistogram();
@@ -276,11 +283,19 @@ public class HistogrammerTest {
         expectedHistogram[2][0] = 100;
         expectedHistogram[3][0] = 100;
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
-            expectedHistogram[1][normalized] += (int) Math.round(IMG_WIDTH * 100 / (IMG_WIDTH * IMG_HEIGHT));
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
+            expectedHistogram[1][normalized] += (int) Math.round(IMG_WIDTH * 100.0 / (IMG_WIDTH * IMG_HEIGHT));
         }
         actualHistogram = histogram.getPercentageHistogram();
         Assert.assertArrayEquals(expectedHistogram, actualHistogram);
+        
+        histogramImg = histogram.getHistogramAsImage(2);
+        File output = new File("redGradientHisto.png");
+        try {
+            ImageIO.write(histogramImg, "png", output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     /**
@@ -288,7 +303,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testGreenGradient() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(greenGradientImg);
         
@@ -298,7 +313,8 @@ public class HistogrammerTest {
         expectedHistogram[3][0] = IMG_WIDTH * IMG_HEIGHT;   // BLUE
         // fills with the expected the gradient
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
             expectedHistogram[2][normalized] += IMG_WIDTH;
         }
         histogram.calcHistogram();
@@ -310,7 +326,7 @@ public class HistogrammerTest {
         Arrays.fill(expectedHistogram[2], 0);
         expectedHistogram[3][0] = 100;
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
             expectedHistogram[2][normalized] += (int) Math.round(IMG_WIDTH * 100 / (IMG_WIDTH * IMG_HEIGHT));
         }
         actualHistogram = histogram.getPercentageHistogram();
@@ -322,7 +338,7 @@ public class HistogrammerTest {
      */
     @Test
     public void testBlueGradient() {
-        int[][] expectedHistogram = new int[4][256];
+        int[][] expectedHistogram = new int[4][COLOR_RANGE];
         int[][] actualHistogram;
         Histogrammer histogram = new Histogrammer(blueGradientImg);
         
@@ -332,7 +348,7 @@ public class HistogrammerTest {
         expectedHistogram[2][0] = IMG_WIDTH * IMG_HEIGHT;   // GREEN
         // fills with the expected the gradient
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
             expectedHistogram[3][normalized] += IMG_WIDTH;
         }
         histogram.calcHistogram();
@@ -344,7 +360,7 @@ public class HistogrammerTest {
         expectedHistogram[2][0] = 100;
         Arrays.fill(expectedHistogram[3], 0);
         for (int h = 0; h < IMG_HEIGHT; h++) {
-            int normalized = (int) (h * 0xFF/*Color Range*/ / IMG_HEIGHT);
+            int normalized = (int) (h * COLOR_RANGE / IMG_HEIGHT);
             expectedHistogram[3][normalized] += (int) Math.round(IMG_WIDTH * 100 / (IMG_WIDTH * IMG_HEIGHT));
         }
         actualHistogram = histogram.getPercentageHistogram();
